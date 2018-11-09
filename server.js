@@ -84,6 +84,9 @@ axios.get("https://www.foxnews.com/us").then(function (response) {
   });
 });
 
+app.get("/", function (req, res) {
+  res.redirect("/articles");
+});
 
 // Route for getting all Articles from the db
 app.get("/articles", function (req, res) {
