@@ -53,9 +53,10 @@ mongoDB.once('open', function () {
 
 
 app.get("/", function (req, res) {
-  res.json({});
-
-
+  db.Article.find({}).then(function (dbArticle) {
+    console.log(dbArticle);
+    res.render("index", {articles: dbArticle});
+  });
 });
 
 app.get("/scrape", function (req, res) {
