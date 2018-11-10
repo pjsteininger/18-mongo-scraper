@@ -28,7 +28,8 @@ app.use(express.json());
 // Make public a static folder
 app.use(express.static("public"));
 
-
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
 
 
 
@@ -49,43 +50,52 @@ mongoDB.once('open', function () {
 
 // Routes
 
-axios.get("https://www.foxnews.com/us").then(function (response) {
 
-  // Load the Response into cheerio and save it to a variable
-  // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
-  var $ = cheerio.load(response.data);
-
-  $("h4").each(function (i, element) {
-
-    var result = {};
-    // Save the text of the element in a "title" variable
-    result.title = $(element).text();
-
-    // In the currently selected element, look at its child elements (i.e., its a-tags),
-    // then save the values for any "href" attributes that the child elements may have
-    result.link = $(element).children().attr("href");
-
-    if (result.link && result.link.charAt(0) === "/") {
-      result.link = "https://www.foxnews.com" + result.link;
-    }
-
-    if (result.link && result.title) {
-      // Create a new Article using the `result` object built from scraping
-      db.Article.create(result)
-        .then(function (dbArticle) {
-          // View the added result in the console
-          console.log(dbArticle);
-        })
-        .catch(function (err) {
-          // If an error occurred, send it to the client
-          return res.json(err);
-        });
-    }
-  });
-});
 
 app.get("/", function (req, res) {
-  res.redirect("/articles");
+  db.Article.find({}).then(function (dbArticle) {
+    console.log(dbArticle);
+    res.render("index", {articles: dbArticle});
+  });
+
+});
+
+app.get("/scrape", function (req, res) {
+  axios.get("https://www.foxnews.com/us").then(function (response) {
+
+    // Load the Response into cheerio and save it to a variable
+    // '$' becomes a shorthand for cheerio's selector commands, much like jQuery's '$'
+    var $ = cheerio.load(response.data);
+
+    $("h4").each(function (i, element) {
+
+      var result = {};
+      // Save the text of the element in a "title" variable
+      result.title = $(element).text();
+
+      // In the currently selected element, look at its child elements (i.e., its a-tags),
+      // then save the values for any "href" attributes that the child elements may have
+      result.link = $(element).children().attr("href");
+
+      if (result.link && result.link.charAt(0) === "/") {
+        result.link = "https://www.foxnews.com" + result.link;
+      }
+
+      if (result.link && result.title) {
+        // Create a new Article using the `result` object built from scraping
+        db.Article.create(result)
+          .then(function (dbArticle) {
+            // View the added result in the console
+          })
+          .catch(function (err) {
+            // If an error occurred, send it to the client
+            return res.json(err);
+          });
+      }
+    });
+    res.redirect("/");
+  });
+
 });
 
 // Route for getting all Articles from the db

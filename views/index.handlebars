@@ -1,10 +1,19 @@
 <div class="row">
-  {{#each article}} 
-    <div class ="col-md-2">
-      <div class="card">
-          <h4>{{title}}</h4>
-          <a href = "/readArticle/{{this._id}}" class="btn blue lighten-1" id="btnSignUp">Article Link</a>
+  <div class="col-md-12 my-5 text-center">
+    <a href="/scrape">
+      <div class="btn btn-success p-2">Scrape</div>
+    </a>
+  </div>
+</div>
+
+<div class="row text-center">
+  <div class="col-md-12">
+    {{#each articles}}
+    <a href="{{link}}">
+      <div class="card text-center p-3">
+        <h4>{{title}}</h4>
       </div>
-    </div>
-  {{/each}}
+    </a>
+    {{/each}}
+  </div>
 </div>
