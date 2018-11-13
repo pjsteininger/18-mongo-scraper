@@ -54,8 +54,7 @@ mongoDB.once('open', function () {
 
 app.get("/", function (req, res) {
   db.Article.find({}).then(function (dbArticle) {
-    console.log(dbArticle);
-    res.render("index", {articles: dbArticle});
+    res.render("index", { articles: dbArticle });
   });
 });
 
@@ -69,6 +68,7 @@ app.get("/scrape", function (req, res) {
     $("h4").each(function (i, element) {
 
       var result = {};
+      result.saved = false;
       // Save the text of the element in a "title" variable
       result.title = $(element).text();
 
@@ -81,15 +81,22 @@ app.get("/scrape", function (req, res) {
       }
 
       if (result.link && result.title) {
+        db.Article.findOne(result).then(function (findArticle) {
+          if (findArticle) {
+            console.log("already got this one");
+          } else {
+            db.Article.create(result)
+              .then(function (dbArticle) {
+                // View the added result in the console
+              })
+              .catch(function (err) {
+                // If an error occurred, send it to the client
+                return res.json(err);
+              });
+          }
+        });
         // Create a new Article using the `result` object built from scraping
-        db.Article.create(result)
-          .then(function (dbArticle) {
-            // View the added result in the console
-          })
-          .catch(function (err) {
-            // If an error occurred, send it to the client
-            return res.json(err);
-          });
+
       }
     });
     res.redirect("/");
